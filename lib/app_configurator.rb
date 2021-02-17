@@ -1,30 +1,29 @@
+require 'i18n'
 require 'logger'
-
-require './lib/database_connector'
+require 'yaml'
 
 class AppConfigurator
+  def initialize
+    @config = YAML.safe_load_file('config/config.yml', symbolize_names: true)
+  end
+
   def configure
     setup_i18n
-    setup_database
   end
 
-  def get_token
-    YAML::load(IO.read('config/secrets.yml'))['telegram_bot_token']
+  def token
+    @config[:telegram][:bot_token]
   end
 
-  def get_logger
-    Logger.new(STDOUT, Logger::DEBUG)
+  def logger
+    Logger.new($stdout, @config[:log][:level])
   end
 
   private
 
   def setup_i18n
-    I18n.load_path = Dir['config/locales.yml']
-    I18n.locale = :en
+    I18n.load_path << Dir[File.expand_path('config/locales') + '/*.yml']
+    I18n.locale = :'zh-CN'
     I18n.backend.load_translations
-  end
-
-  def setup_database
-    DatabaseConnector.establish_connection
   end
 end

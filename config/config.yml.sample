@@ -1,0 +1,4 @@
+telegram:
+  bot_token: your_bot_token
+log:
+  level: INFO # DEBUG INFO WARN ERROR FATAL

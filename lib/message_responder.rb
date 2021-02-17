@@ -1,53 +1,73 @@
-require './models/user'
 require './lib/message_sender'
+require './lib/mirrorz'
 
 class MessageResponder
-  attr_reader :message
-  attr_reader :bot
-  attr_reader :user
+  attr_reader :message, :bot, :user
 
   def initialize(options)
     @bot = options[:bot]
     @message = options[:message]
-    @user = User.find_or_create_by(uid: message.from.id)
+    @user = message.from
+    @mirrorz = options[:mirrorz]
   end
 
   def respond
-    on /^\/start/ do
+    on %r{^/start} do
       answer_with_greeting_message
     end
 
-    on /^\/stop/ do
-      answer_with_farewell_message
+    on %r{^/help} do
+      answer_with_help_message
+    end
+
+    on %r{^/sync_sites} do
+      @mirrorz.sync_sites
+    end
+
+    on %r{^/sites} do
+      answer_with_sites
+    end
+
+    on %r{^/site\s(\w+)} do |index_or_abbr|
+      answer_with_site(index_or_abbr)
     end
   end
 
   private
 
-  def on regex, &block
+  def on(regex, &block)
     regex =~ message.text
+    return unless $~
 
-    if $~
-      case block.arity
-      when 0
-        yield
-      when 1
-        yield $1
-      when 2
-        yield $1, $2
-      end
+    if block.arity.zero?
+      yield
+    else
+      yield(*(1...(1 + block.arity)).map { |i| Regexp.last_match(i) })
     end
   end
 
   def answer_with_greeting_message
-    answer_with_message I18n.t('greeting_message')
+    answer_with_message(I18n.t('greeting_message'))
   end
 
-  def answer_with_farewell_message
-    answer_with_message I18n.t('farewell_message')
+  def answer_with_help_message
+    answer_with_message(I18n.t('help_message'), 'MarkdownV2')
   end
 
-  def answer_with_message(text)
-    MessageSender.new(bot: bot, chat: message.chat, text: text).send
+  def answer_with_sites
+    answer_with_message(@mirrorz.sites.map.with_index do |site, i|
+      "#{i} #{site[:abbr]} #{site[:name]}\n#{site[:url]}"
+    end.join("\n\n"))
+  end
+
+  def answer_with_site(index_or_abbr)
+    index = @mirrorz.sites.index { |site| site[:abbr] == index_or_abbr } || Integer(index_or_abbr)
+    answer_with_message(@mirrorz.sites[index].to_yaml)
+  rescue StandardError
+    answer_with_message(I18n.t('not_found'))
+  end
+
+  def answer_with_message(text, parse_mode = nil)
+    MessageSender.new(bot: bot, chat: message.chat, text: text, parse_mode: parse_mode).send
   end
 end
