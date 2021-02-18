@@ -12,24 +12,36 @@ class MessageResponder
   end
 
   def respond
-    on %r{^/start} do
+    on %r{^/start$} do
       answer_with_greeting_message
     end
 
-    on %r{^/help} do
+    on %r{^/help$} do
       answer_with_help_message
     end
 
-    on %r{^/sync_sites} do
+    on %r{^/sync_sites$} do
       @mirrorz.sync_sites
     end
 
-    on %r{^/sites} do
+    on %r{^/sites$} do
       answer_with_sites
     end
 
-    on %r{^/site\s(\w+)} do |index_or_abbr|
+    on %r{^/site\s(\S+)$} do |index_or_abbr|
       answer_with_site(index_or_abbr)
+    end
+
+    on %r{^/items$} do
+      answer_with_items
+    end
+
+    on %r{^/item\s(\S+)$} do |regex|
+      answer_with_item(regex)
+    end
+
+    on %r{^/item\s(\S+)\s(\S+)$} do |regex, index_or_abbr|
+      answer_with_item_site(regex, index_or_abbr)
     end
   end
 
@@ -44,6 +56,8 @@ class MessageResponder
     else
       yield(*(1...(1 + block.arity)).map { |i| Regexp.last_match(i) })
     end
+  rescue StandardError
+    answer_with_message(I18n.t('internal_error'))
   end
 
   def answer_with_greeting_message
@@ -56,13 +70,43 @@ class MessageResponder
 
   def answer_with_sites
     answer_with_message(@mirrorz.sites.map.with_index do |site, i|
-      "#{i} #{site[:abbr]} #{site[:name]}\n#{site[:url]}"
-    end.join("\n\n"))
+      "[#{i}] [#{site[:abbr]}] #{site[:name]}\n#{site[:url]}"
+    end.join("\n"))
   end
 
   def answer_with_site(index_or_abbr)
     index = @mirrorz.sites.index { |site| site[:abbr] == index_or_abbr } || Integer(index_or_abbr)
     answer_with_message(@mirrorz.sites[index].to_yaml)
+  rescue StandardError
+    answer_with_message(I18n.t('not_found'))
+  end
+
+  def answer_with_items
+    answer_with_message(@mirrorz.items.map.with_index do |item, i|
+                          "[#{i}] [#{item[:category]}] #{item[:distro]}"
+                        end.join("\n"))
+  end
+
+  def find_item(regex)
+    index = @mirrorz.items.index { |item| /#{regex}/i.match(item[:distro]) } || Integer(regex)
+    @mirrorz.items[index]
+  end
+
+  def answer_with_item(regex)
+    item = find_item(regex)
+    answer_with_message("[#{item[:category]}] #{item[:distro]}\n\n" +
+      item[:sites].map.with_index do |site, i|
+        "[#{i}] [#{site[:abbr]}] #{site[:name]}"
+      end.join("\n"))
+  rescue StandardError
+    answer_with_message(I18n.t('not_found'))
+  end
+
+  def answer_with_item_site(regex, index_or_abbr)
+    item = find_item(regex)
+    sites = item[:sites]
+    index = sites.index { |site| site[:abbr] == index_or_abbr } || Integer(index_or_abbr)
+    answer_with_message(sites[index][:items].to_yaml)
   rescue StandardError
     answer_with_message(I18n.t('not_found'))
   end

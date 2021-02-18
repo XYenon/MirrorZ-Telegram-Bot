@@ -4,6 +4,12 @@ zh-CN:
 
     /help 查看帮助
   help_message: |
+    暂不支持带空格的 abbr
+
     `/sites` 查看所有镜像站
     `/site [index_or_abbr]` 查看指定镜像站详情
+    `/items` 查看所有软件
+    `/items [index_or_regex]` 查看指定软件镜像站列表
+    `/items [index_or_regex] [index_or_abbr]` 查看指定软件在指定镜像站的地址
   not_found: 未找到
+  internal_error: 内部错误
