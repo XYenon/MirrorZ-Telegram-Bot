@@ -27,7 +27,9 @@ class MirrorZ
         items << { distro: new_item[:distro], category: new_item[:category], sites: [] } if old_item.nil?
         old_item ||= items.last
         old_item[:sites] << full_site[:site].clone
-        old_item[:sites].last[:items] = new_item[:urls]
+        old_item[:sites].last[:items] = new_item[:urls].map do |url|
+          { name: url[:name], url: "#{full_site[:site][:url]}#{url[:url]}" }
+        end.freeze
       end
     end
     @items = items.sort do |a, b|
