@@ -52,14 +52,16 @@ class MirrorZ
   def latest_full_sites
     uris = mirrorz_json_uris
     full_sites = []
-    Async do
+    Async do |task|
       internet = Async::HTTP::Internet.new
       barrier = Async::Barrier.new
       uris.each_with_index do |uri, i|
         barrier.async do
           $logger.debug("Syncing #{uri}")
-          response = internet.get(uri)
-          full_sites[i] = JSON.parse(response.read, symbolize_names: true)
+          task.with_timeout(10) do
+            response = internet.get(uri)
+            full_sites[i] = JSON.parse(response.read, symbolize_names: true)
+          end
         rescue StandardError => e
           $logger.error("#{uris[i]}\n#{e.message}")
         end

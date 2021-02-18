@@ -4,7 +4,7 @@ zh-CN:
 
     /help 查看帮助
   help_message: |
-    方括号（[]）也需要输入
+    方括号 `[]` 也需要输入
 
     `/sites` 查看所有镜像站
     `/site [abbr]` 查看指定镜像站详情
