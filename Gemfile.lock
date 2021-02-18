@@ -1,6 +1,24 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    async (1.28.9)
+      console (~> 1.10)
+      nio4r (~> 2.3)
+      timers (~> 4.1)
+    async-http (0.54.1)
+      async (~> 1.25)
+      async-io (~> 1.28)
+      async-pool (~> 0.2)
+      protocol-http (~> 0.21.0)
+      protocol-http1 (~> 0.13.0)
+      protocol-http2 (~> 0.14.0)
+    async-http-faraday (0.9.0)
+      async-http (~> 0.42)
+      faraday
+    async-io (1.30.2)
+      async (~> 1.14)
+    async-pool (0.3.5)
+      async (~> 1.25)
     axiom-types (0.1.1)
       descendants_tracker (~> 0.0.4)
       ice_nine (~> 0.11.0)
@@ -8,6 +26,8 @@ GEM
     coercible (1.0.0)
       descendants_tracker (~> 0.0.1)
     concurrent-ruby (1.1.8)
+    console (1.10.1)
+      fiber-local
     descendants_tracker (0.0.4)
       thread_safe (~> 0.3, >= 0.3.1)
     equalizer (0.0.11)
@@ -16,18 +36,27 @@ GEM
       multipart-post (>= 1.2, < 3)
       ruby2_keywords
     faraday-net_http (1.0.1)
+    fiber-local (1.0.0)
     i18n (1.8.9)
       concurrent-ruby (~> 1.0)
     ice_nine (0.11.2)
     inflecto (0.0.2)
     multipart-post (2.1.1)
-    rake (13.0.3)
+    nio4r (2.5.5)
+    protocol-hpack (1.4.2)
+    protocol-http (0.21.0)
+    protocol-http1 (0.13.2)
+      protocol-http (~> 0.19)
+    protocol-http2 (0.14.2)
+      protocol-hpack (~> 1.4)
+      protocol-http (~> 0.18)
     ruby2_keywords (0.0.4)
     telegram-bot-ruby (0.14.0)
       faraday
       inflecto
       virtus
     thread_safe (0.3.6)
+    timers (4.3.3)
     virtus (1.0.5)
       axiom-types (~> 0.1)
       coercible (~> 1.0)
@@ -38,8 +67,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  async (~> 1.28, >= 1.28.9)
+  async-http-faraday (~> 0.9.0)
   i18n (~> 1.8, >= 1.8.9)
-  rake (~> 13.0, >= 13.0.3)
   telegram-bot-ruby (~> 0.14.0)
 
 RUBY VERSION

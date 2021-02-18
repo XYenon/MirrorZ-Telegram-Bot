@@ -1,3 +1,6 @@
+require 'async'
+require 'async/barrier'
+require 'async/http/internet'
 class MirrorZ
   attr_reader :sites, :items
 
@@ -10,7 +13,11 @@ class MirrorZ
   def sync_sites
     $logger.info('Syncing sites')
     @full_sites = latest_full_sites.freeze
-    @sites = @full_sites.map { |site| site[:site] }.freeze
+    @sites = @full_sites.map do |full_site|
+      site = full_site[:site].clone
+      site[:big] = site[:url] + site[:big] unless site[:big].nil?
+      site
+    end.freeze
     set_items
     $logger.info('Synced sites')
   end
@@ -44,11 +51,23 @@ class MirrorZ
 
   def latest_full_sites
     uris = mirrorz_json_uris
-    uris.map do |uri|
-      response = Faraday.get(uri)
-      JSON.parse(response.body, symbolize_names: true)
-    rescue StandardError
-      nil
-    end.compact
+    full_sites = []
+    Async do
+      internet = Async::HTTP::Internet.new
+      barrier = Async::Barrier.new
+      uris.each_with_index do |uri, i|
+        barrier.async do
+          $logger.debug("Syncing #{uri}")
+          response = internet.get(uri)
+          full_sites[i] = JSON.parse(response.read, symbolize_names: true)
+        rescue StandardError => e
+          $logger.error("#{uris[i]}\n#{e.message}")
+        end
+      end
+      barrier.wait
+    ensure
+      internet&.close
+    end
+    full_sites.compact
   end
 end

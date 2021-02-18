@@ -4,12 +4,46 @@ zh-CN:
 
     /help 查看帮助
   help_message: |
-    暂不支持带空格的 abbr
+    方括号（[]）也需要输入
 
     `/sites` 查看所有镜像站
-    `/site [index_or_abbr]` 查看指定镜像站详情
+    `/site [abbr]` 查看指定镜像站详情
     `/items` 查看所有软件
-    `/item [index_or_regex]` 查看指定软件镜像站列表
-    `/item [index_or_regex] [index_or_abbr]` 查看指定软件在指定镜像站的地址
+    `/item [regex]` 查看指定软件镜像站列表
+    `/item [regex] [abbr]` 查看指定软件在指定镜像站的地址
   not_found: 未找到
   internal_error: 内部错误
+  mirrorz:
+    version: 版本
+    site:
+      _: 镜像站
+      url: 地址
+      logo: 图标
+      logo_darkmode: 暗黑模式图标
+      abbr: abbr
+      name: 名称
+      homepage: 主页
+      issue: 议题地址
+      request: 申请镜像地址
+      email: 邮箱
+      group: 群组
+      disk: 磁盘占用
+      note: 备注
+      big: 大文件
+    info:
+      _: 软件
+      distro: 名称
+      category: 类别
+      urls:
+        _: 地址
+        name: 名称
+        url: 地址
+    mirrors:
+      _: 镜像
+      cname: 名称
+      desc: 描述
+      url: 地址
+      status: 状态
+      help: 帮助地址
+      upstream: 上游地址
+      size: 体积
