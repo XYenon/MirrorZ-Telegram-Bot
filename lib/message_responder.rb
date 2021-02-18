@@ -86,7 +86,7 @@ class MessageResponder
   end
 
   def answer_with_items
-    answer_with_message("#{I18n.t('mirrorz.site.abbr')}   -   #{I18n.t('mirrorz.site.name')}\n" +
+    answer_with_message("#{I18n.t('mirrorz.info.category')} - #{I18n.t('mirrorz.info.distro')}\n" +
     @mirrorz.items.map do |item|
       "#{item[:category]} - #{item[:distro]}"
     end.join("\n"), 'Markdown')
