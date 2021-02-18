@@ -2,12 +2,10 @@ require './lib/message_sender'
 require './lib/mirrorz'
 
 class MessageResponder
-  attr_reader :message, :bot, :user
-
   def initialize(options)
     @bot = options[:bot]
     @message = options[:message]
-    @user = message.from
+    @user = @message.from
     @mirrorz = options[:mirrorz]
   end
 
@@ -28,7 +26,7 @@ class MessageResponder
       answer_with_sites
     end
 
-    on %r{^/site\s\[(.+?)\]$} do |index_or_abbr|
+    on %r{^/site\s\[([^\[\]]+?)\]$} do |index_or_abbr|
       answer_with_site(index_or_abbr)
     end
 
@@ -36,11 +34,11 @@ class MessageResponder
       answer_with_items
     end
 
-    on %r{^/item\s\[(.+?)\]$} do |regex|
+    on %r{^/item\s\[([^\[\]]+?)\]$} do |regex|
       answer_with_item(regex)
     end
 
-    on %r{^/item\s\[(.+?)\]\s\[(.+?)\]$} do |regex, index_or_abbr|
+    on %r{^/item\s\[([^\[\]]+?)\]\s\[([^\[\]]+?)\]$} do |regex, index_or_abbr|
       answer_with_item_site(regex, index_or_abbr)
     end
   end
@@ -48,7 +46,7 @@ class MessageResponder
   private
 
   def on(regex, &block)
-    regex =~ message.text
+    regex =~ @message.text
     return unless $~
 
     if block.arity.zero?
@@ -117,6 +115,6 @@ class MessageResponder
   end
 
   def answer_with_message(text, parse_mode = nil)
-    MessageSender.new(bot: bot, chat: message.chat, text: text, parse_mode: parse_mode).send
+    MessageSender.new(bot: @bot, chat: @message.chat, text: text, parse_mode: parse_mode).send
   end
 end
