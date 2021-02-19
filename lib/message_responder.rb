@@ -70,7 +70,7 @@ class MessageResponder
   def answer_with_sites
     answer_with_message("#{I18n.t('mirrorz.site.abbr')}   -   #{I18n.t('mirrorz.site.name')}\n" +
     @mirrorz.sites.map do |site|
-      "`[#{site[:abbr]}]` - [#{site[:name]}](#{site[:url]})"
+      "`[#{site[:abbr]}]` - [#{site[:name]}](#{@mirrorz.mirrorz_uri(:site, site)})\n#{site[:url]}"
     end.join("\n"), 'Markdown')
   end
 
@@ -86,7 +86,7 @@ class MessageResponder
   def answer_with_items
     answer_with_message("#{I18n.t('mirrorz.info.category')} - #{I18n.t('mirrorz.info.distro')}\n" +
     @mirrorz.items.map do |item|
-      "#{item[:category]} - #{item[:distro]}"
+      "#{item[:category]} - [#{item[:distro]}](#{@mirrorz.mirrorz_uri(:index, item)})"
     end.join("\n"), 'Markdown')
   end
 
@@ -97,7 +97,7 @@ class MessageResponder
 
   def answer_with_item(regex)
     item = find_item(regex)
-    answer_with_message("#{item[:category]} - #{item[:distro]}\n\n" +
+    answer_with_message("#{item[:category]} - [#{item[:distro]}](#{@mirrorz.mirrorz_uri(:index, item)})\n\n" +
       item[:sites].map do |site|
         "`[#{site[:abbr]}]` - #{site[:name]}"
       end.join("\n"),  'Markdown')
@@ -109,7 +109,11 @@ class MessageResponder
     item = find_item(regex)
     sites = item[:sites]
     index = sites.index { |site| site[:abbr] == index_or_abbr } || Integer(index_or_abbr)
-    answer_with_message(sites[index][:items].to_yaml)
+    answer_with_message(sites[index][:items].map do |i|
+      i.each_pair.map do |k, v|
+        "#{I18n.t("mirrorz.info.urls.#{k}")}: #{v}"
+      end.join("\n")
+    end.join("\n\n"))
   rescue StandardError
     answer_with_message(I18n.t('not_found'))
   end

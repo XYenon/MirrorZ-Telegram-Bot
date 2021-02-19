@@ -1,9 +1,12 @@
 require 'async'
 require 'async/barrier'
 require 'async/http/internet'
+require 'cgi'
+
 class MirrorZ
   attr_reader :sites, :items
 
+  MIRRORZ_URL = 'https://mirrorz.org'.freeze
   GITHUB_SITES_URI = 'https://raw.githubusercontent.com/tuna/mirrorz/master/src/config/mirrors.js'.freeze
 
   def initialize
@@ -15,11 +18,21 @@ class MirrorZ
     @full_sites = latest_full_sites.freeze
     @sites = @full_sites.map do |full_site|
       site = full_site[:site].clone
-      site[:big] = site[:url] + site[:big] unless site[:big].nil?
+      site[:big] = File.join(site[:url], site[:big]) unless site[:big].nil?
       site
     end.freeze
     set_items
     $logger.info('Synced sites')
+  end
+
+  def mirrorz_uri(page, item)
+    File.join(MIRRORZ_URL,
+              case page
+              when :index
+                File.join(CGI.escape(item[:category]), CGI.escape(item[:distro].gsub(/\s/, '')))
+              when :site
+                File.join('site', CGI.escape(item[:abbr].gsub(/\s/, '')))
+              end)
   end
 
   private
@@ -35,7 +48,7 @@ class MirrorZ
         old_item ||= items.last
         old_item[:sites] << full_site[:site].clone
         old_item[:sites].last[:items] = new_item[:urls].map do |url|
-          { name: url[:name], url: "#{full_site[:site][:url]}#{url[:url]}" }
+          { name: url[:name], url: File.join(full_site[:site][:url], url[:url]) }
         end.freeze
       end
     end
