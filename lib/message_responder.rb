@@ -56,19 +56,19 @@ class MessageResponder
     end
   rescue StandardError => e
     $log.error(e.backtrace)
-    answer_with_message(I18n.t('internal_error'))
+    answer_with_message(t('internal_error'))
   end
 
   def answer_with_greeting_message
-    answer_with_message(I18n.t('greeting_message'))
+    answer_with_message(t('greeting_message'))
   end
 
   def answer_with_help_message
-    answer_with_message(I18n.t('help_message'), 'MarkdownV2')
+    answer_with_message(t('help_message'), 'MarkdownV2')
   end
 
   def answer_with_sites
-    answer_with_message("#{I18n.t('mirrorz.site.abbr')}   -   #{I18n.t('mirrorz.site.name')}\n" +
+    answer_with_message("#{t('mirrorz.site.abbr')}   -   #{t('mirrorz.site.name')}\n" +
     @mirrorz.sites.map do |site|
       "`[#{site[:abbr]}]` - [#{site[:name]}](#{@mirrorz.mirrorz_uri(:site, site)})\n#{site[:url]}"
     end.join("\n"), 'Markdown')
@@ -77,14 +77,14 @@ class MessageResponder
   def answer_with_site(index_or_abbr)
     index = @mirrorz.sites.index { |site| site[:abbr] == index_or_abbr } || Integer(index_or_abbr)
     answer_with_message(@mirrorz.sites[index].each_pair.map do |k, v|
-      "#{I18n.t("mirrorz.site.#{k}")}: #{v}"
+      "#{t("mirrorz.site.#{k}")}: #{v}"
     end.join("\n"))
   rescue StandardError
-    answer_with_message(I18n.t('not_found'))
+    answer_with_message(t('not_found'))
   end
 
   def answer_with_items
-    answer_with_message("#{I18n.t('mirrorz.info.category')} - #{I18n.t('mirrorz.info.distro')}\n" +
+    answer_with_message("#{t('mirrorz.info.category')} - #{t('mirrorz.info.distro')}\n" +
     @mirrorz.items.map do |item|
       "#{item[:category]} - [#{item[:distro]}](#{@mirrorz.mirrorz_uri(:index, item)})"
     end.join("\n"), 'Markdown')
@@ -102,7 +102,7 @@ class MessageResponder
         "`[#{site[:abbr]}]` - #{site[:name]}"
       end.join("\n"),  'Markdown')
   rescue StandardError
-    answer_with_message(I18n.t('not_found'))
+    answer_with_message(t('not_found'))
   end
 
   def answer_with_item_site(regex, index_or_abbr)
@@ -111,11 +111,15 @@ class MessageResponder
     index = sites.index { |site| site[:abbr] == index_or_abbr } || Integer(index_or_abbr)
     answer_with_message(sites[index][:items].map do |i|
       i.each_pair.map do |k, v|
-        "#{I18n.t("mirrorz.info.urls.#{k}")}: #{v}"
+        "#{t("mirrorz.info.urls.#{k}")}: #{v}"
       end.join("\n")
     end.join("\n\n"))
   rescue StandardError
-    answer_with_message(I18n.t('not_found'))
+    answer_with_message(t('not_found'))
+  end
+
+  def t(key)
+    I18n.t(key, locals: @user.language_code)
   end
 
   def answer_with_message(text, parse_mode = nil)
