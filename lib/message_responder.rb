@@ -34,12 +34,16 @@ class MessageResponder
       answer_with_items
     end
 
-    on %r{^/item\s\[([^\[\]]+?)\]$} do |regex|
-      answer_with_item(regex)
+    on %r{^/items\s\[([^\[\]]+?)\]$} do |regex|
+      answer_with_items(regex)
     end
 
-    on %r{^/item\s\[([^\[\]]+?)\]\s\[([^\[\]]+?)\]$} do |regex, index_or_abbr|
-      answer_with_item_site(regex, index_or_abbr)
+    on %r{^/item\s\[([^\[\]]+?)\]$} do |distro|
+      answer_with_item(distro)
+    end
+
+    on %r{^/item\s\[([^\[\]]+?)\]\s\[([^\[\]]+?)\]$} do |distro, index_or_abbr|
+      answer_with_item_site(distro, index_or_abbr)
     end
   end
 
@@ -83,20 +87,15 @@ class MessageResponder
     answer_with_message(t('not_found'))
   end
 
-  def answer_with_items
+  def answer_with_items(regex = '.*')
     answer_with_message("#{t('mirrorz.info.category')} - #{t('mirrorz.info.distro')}\n" +
-    @mirrorz.items.map do |item|
+    @mirrorz.items.select { |item| /#{regex}/i.match(item[:distro]) }.map do |item|
       "#{item[:category]} - [#{item[:distro]}](#{@mirrorz.mirrorz_uri(:index, item)})"
     end.join("\n"), 'Markdown')
   end
 
-  def find_item(regex)
-    index = @mirrorz.items.index { |item| /#{regex}/i.match(item[:distro]) } || Integer(regex)
-    @mirrorz.items[index]
-  end
-
-  def answer_with_item(regex)
-    item = find_item(regex)
+  def answer_with_item(distro)
+    item = @mirrorz.items.find { |i| distro == i[:distro] }
     answer_with_message("#{item[:category]} - [#{item[:distro]}](#{@mirrorz.mirrorz_uri(:index, item)})\n\n" +
       item[:sites].map do |site|
         "`[#{site[:abbr]}]` - #{site[:name]}"
@@ -105,8 +104,8 @@ class MessageResponder
     answer_with_message(t('not_found'))
   end
 
-  def answer_with_item_site(regex, index_or_abbr)
-    item = find_item(regex)
+  def answer_with_item_site(distro, index_or_abbr)
+    item = @mirrorz.items.find { |i| distro == i[:distro] }
     sites = item[:sites]
     index = sites.index { |site| site[:abbr] == index_or_abbr } || Integer(index_or_abbr)
     answer_with_message(sites[index][:items].map do |i|

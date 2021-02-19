@@ -9,8 +9,9 @@ zh-CN:
     `/sites` 查看所有镜像站
     `/site [abbr]` 查看指定镜像站详情
     `/items` 查看所有软件
-    `/item [regex]` 查看指定软件镜像站列表
-    `/item [regex] [abbr]` 查看指定软件在指定镜像站的地址
+    `/items [regex]` 搜索软件
+    `/item [name]` 查看指定软件镜像站列表
+    `/item [name] [abbr]` 查看指定软件在指定镜像站的地址
   not_found: 未找到
   internal_error: 内部错误
   mirrorz:
