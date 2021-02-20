@@ -118,7 +118,7 @@ class MessageResponder
   end
 
   def t(key)
-    I18n.t(key, locals: @user.language_code)
+    I18n.t(key, locale: @user.language_code)
   end
 
   def answer_with_message(text, parse_mode = nil)
